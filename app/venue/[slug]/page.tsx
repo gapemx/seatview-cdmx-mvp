@@ -25,6 +25,7 @@ function StarInput({ value, onChange }: { value: number; onChange: (n: number) =
 export default function VenuePage() {
   const params = useParams();
   const slug = Array.isArray(params?.slug) ? params?.slug[0] : (params?.slug as string);
+
   const [venue, setVenue] = useState<any>(null);
   const [uploads, setUploads] = useState<any[]>([]);
   const [file, setFile] = useState<File | null>(null);
@@ -104,26 +105,106 @@ export default function VenuePage() {
       <h1 className="mt-2 text-2xl font-bold">{venue.name}</h1>
 
       <div className="mt-6 grid gap-6 md:grid-cols-3">
+        {/* Upload card */}
         <section className="card p-4 md:col-span-1">
           <h2 className="text-lg font-semibold">Sube tu vista</h2>
           <form onSubmit={handleUpload} className="mt-3 grid gap-3">
             <div className="grid grid-cols-3 gap-2">
-              <input placeholder="Sección" value={form.section} onChange={e=>setForm({...form, section:e.target.value})} className="input" />
-              <input placeholder="Fila" value={form.row} onChange={e=>setForm({...form, row:e.target.value})} className="input" />
-              <input placeholder="Asiento" value={form.seat} onChange={e=>setForm({...form, seat:e.target.value})} className="input" />
+              <input
+                placeholder="Sección"
+                value={form.section}
+                onChange={(e) => setForm({ ...form, section: e.target.value })}
+                className="input"
+              />
+              <input
+                placeholder="Fila"
+                value={form.row}
+                onChange={(e) => setForm({ ...form, row: e.target.value })}
+                className="input"
+              />
+              <input
+                placeholder="Asiento"
+                value={form.seat}
+                onChange={(e) => setForm({ ...form, seat: e.target.value })}
+                className="input"
+              />
             </div>
 
             <div>
               <div className="label mb-1">Calificación</div>
-              <StarInput value={form.stars} onChange={(n)=>setForm({...form, stars:n})} />
+              <StarInput value={form.stars} onChange={(n) => setForm({ ...form, stars: n })} />
             </div>
 
-            <textarea placeholder="Comentario (opcional)" value={form.caption} onChange={e=>setForm({...form, caption:e.target.value})} className="input h-24" />
+            <textarea
+              placeholder="Comentario (opcional)"
+              value={form.caption}
+              onChange={(e) => setForm({ ...form, caption: e.target.value })}
+              className="input h-24"
+            />
 
             <div className="grid gap-2">
-              <input type="file" accept="image/*" onChange={e=>onPick(e.target.files?.[0] || null)} className="input py-1" />
-              {preview && <img src={preview} alt="Preview" className="rounded-xl border object-cover aspect-video" />}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => onPick(e.target.files?.[0] || null)}
+                className="input py-1"
+              />
+              {preview && (
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="rounded-xl border object-cover aspect-video"
+                />
+              )}
             </div>
 
-            <button disabled={busy || !file} className="btn btn-primary">{busy ? 'Subiendo…' : 'Subir'}</button>
-            <p className="text-xs text-slate-5
+            <button disabled={busy || !file} className="btn btn-primary">
+              {busy ? 'Subiendo…' : 'Subir'}
+            </button>
+            <p className="text-xs text-slate-500">
+              Privacidad: en una versión posterior borraremos metadatos EXIF y aplicaremos
+              difuminado de rostros automáticamente.
+            </p>
+          </form>
+        </section>
+
+        {/* Gallery */}
+        <section className="md:col-span-2">
+          <h2 className="text-lg font-semibold mb-2">Galería de vistas ({uploads.length})</h2>
+          {uploads.length === 0 ? (
+            <div className="card p-6 text-slate-600">
+              Aún no hay fotos. ¡Sé el primero en subir una!
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {uploads.map((u) => (
+                <figure key={u.id} className="card overflow-hidden">
+                  <img
+                    src={u.photo_path}
+                    alt={u.caption || 'Vista del asiento'}
+                    className="w-full aspect-video object-cover"
+                  />
+                  <figcaption className="p-3 text-sm">
+                    <div className="font-medium">
+                      {u.stars ? '★'.repeat(Number(u.stars)) : 'Sin calificación'}
+                    </div>
+                    <div className="text-slate-600">
+                      {[
+                        u.section && `Sección ${u.section}`,
+                        u.row && `Fila ${u.row}`,
+                        u.seat && `Asiento ${u.seat}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </div>
+                    {u.caption && <div className="mt-1">{u.caption}</div>}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}
