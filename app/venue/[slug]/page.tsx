@@ -1,9 +1,16 @@
 'use client';
+
 import { useEffect, useState, FormEvent } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { useParams } from 'next/navigation';
 
-function StarInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+function StarInput({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+}) {
   return (
     <div className="flex gap-1 text-2xl text-amber-600">
       {[1, 2, 3, 4, 5].map((n) => (
@@ -24,18 +31,30 @@ function StarInput({ value, onChange }: { value: number; onChange: (n: number) =
 
 export default function VenuePage() {
   const params = useParams();
-  const slug = Array.isArray(params?.slug) ? params?.slug[0] : (params?.slug as string);
+  const slug = Array.isArray(params?.slug)
+    ? params?.slug[0]
+    : (params?.slug as string);
 
   const [venue, setVenue] = useState<any>(null);
   const [uploads, setUploads] = useState<any[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [form, setForm] = useState({ section: '', row: '', seat: '', stars: 0, caption: '' });
+  const [form, setForm] = useState({
+    section: '',
+    row: '',
+    seat: '',
+    stars: 0,
+    caption: '',
+  });
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const { data: v } = await supabase.from('venues').select('*').eq('slug', slug).single();
+      const { data: v } = await supabase
+        .from('venues')
+        .select('*')
+        .eq('slug', slug)
+        .single();
       setVenue(v);
       if (v) {
         const { data: u } = await supabase
@@ -60,11 +79,15 @@ export default function VenuePage() {
     try {
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const key = `${venue.slug}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('seat-photos').upload(key, file, {
-        cacheControl: '3600',
-        upsert: false,
-        contentType: file.type || 'image/jpeg',
-      });
+
+      const { error: upErr } = await supabase
+        .storage
+        .from('seat-photos')
+        .upload(key, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type || 'image/jpeg',
+        });
       if (upErr) throw upErr;
 
       const { data: pub } = supabase.storage.from('seat-photos').getPublicUrl(key);
@@ -97,11 +120,17 @@ export default function VenuePage() {
     }
   }
 
-  if (!venue) return <main>Cargando…</main>;
+  // Loading state
+  if (!venue) {
+    return <div style={{ padding: 16 }}>Cargando...</div>;
+  }
 
+  // Normal render
   return (
-    <main>
-      <a href="/" className="text-sm underline">← Volver</a>
+    <div style={{ paddingTop: 8 }}>
+      <a href="/" className="text-sm underline">
+        ← Volver
+      </a>
       <h1 className="mt-2 text-2xl font-bold">{venue.name}</h1>
 
       <div className="mt-6 grid gap-6 md:grid-cols-3">
@@ -132,7 +161,10 @@ export default function VenuePage() {
 
             <div>
               <div className="label mb-1">Calificación</div>
-              <StarInput value={form.stars} onChange={(n) => setForm({ ...form, stars: n })} />
+              <StarInput
+                value={form.stars}
+                onChange={(n) => setForm({ ...form, stars: n })}
+              />
             </div>
 
             <textarea
@@ -162,15 +194,17 @@ export default function VenuePage() {
               {busy ? 'Subiendo…' : 'Subir'}
             </button>
             <p className="text-xs text-slate-500">
-              Privacidad: en una versión posterior borraremos metadatos EXIF y aplicaremos
-              difuminado de rostros automáticamente.
+              Privacidad: en una versión posterior borraremos metadatos EXIF y
+              aplicaremos difuminado de rostros automáticamente.
             </p>
           </form>
         </section>
 
         {/* Gallery */}
         <section className="md:col-span-2">
-          <h2 className="text-lg font-semibold mb-2">Galería de vistas ({uploads.length})</h2>
+          <h2 className="text-lg font-semibold mb-2">
+            Galería de vistas ({uploads.length})
+          </h2>
           {uploads.length === 0 ? (
             <div className="card p-6 text-slate-600">
               Aún no hay fotos. ¡Sé el primero en subir una!
@@ -205,6 +239,6 @@ export default function VenuePage() {
           )}
         </section>
       </div>
-    </main>
+    </div>
   );
 }
