@@ -33,3 +33,4 @@ Visit http://localhost:3000
 
 This is an MVP with open uploads. Add auth/moderation before public launch.
 # seatview-cdmx-mvp
+# seatview-cdmx-mvp
